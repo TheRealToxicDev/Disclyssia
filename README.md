@@ -8,12 +8,12 @@ GitHub: `npm i --save github:Sworder71/Disclyssia`
 
 # Information
 This module has currently:
-- Client support (**sendMessage()** and **setPresence()** methods are made)
+- Client support
 - No voice support 
-- No message support
-- No channel support
-- No server support
-- No user support
+- Message support
+- No full channel support
+- No full server support
+- No full user support
 
 # Example usage
 ```js
