@@ -8,6 +8,7 @@ module.exports.GATEWAY = 'wss://gateway.discord.gg';
 module.exports.USER = (userId) => `/users/${userId}`;
 module.exports.CHANNELS = (userId) => `/users/${userId}/channels`;
 module.exports.CHANNEL = (channelId) => `/channels/${channelId}`;
+module.exports.CHANNEL_MESSAGES = (channelId) => `/channels/${channelId}/messages`;
 module.exports.GUILDS = (userId) => `/users/${userId}/guilds`;
 module.exports.GUILD = (guildId) => `/guilds/${guildId}`;
 module.exports.GUILD_MEMBERS = (guildId) => `/guilds/${guildId}/members`;

@@ -3,7 +3,7 @@
 const ws = require('ws');
 const { EventEmitter } = require('events');
 const ZlibSync = require('zlib-sync');
-const Endpoints = require('./Endpoints');
+const Endpoints = require('../Rest/Endpoints');
 const Constants = require('../Constants');
 const Payloads = require('./Payloads');
 

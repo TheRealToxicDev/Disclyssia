@@ -1,12 +1,11 @@
 'use strict';
 
-const Endpoints = require('./Gateway/Endpoints');
+const Endpoints = require('./Rest/Endpoints');
 const WebSocket = require('./Gateway/WebSocket');
 const Payloads = require('./Gateway/Payloads');
 const APIRequest = require('./Rest/APIRequest');
 
 const { EventEmitter } = require('events');
-const axios = require('axios');
 const FormData = require('form-data');
 
 module.exports = class Client extends EventEmitter {
@@ -71,7 +70,7 @@ module.exports = class Client extends EventEmitter {
      * @returns {Promise<Object>}
      */
     updateSelf(data = {}) {
-        return this._APIRequest.make('patch', Endpoints.USER('@me'), data);
+        return this._APIRequest.make('patch', Endpoints.USER('@me'), { data });
     }
 
     /**
@@ -148,11 +147,10 @@ module.exports = class Client extends EventEmitter {
                 }
             }
             form.append('payload_json', JSON.stringify(data));
-            axios.post(Endpoints.BASE_URL + '/channels/' + channelId + '/messages', form, {
+            return this._APIRequest.make('post', Endpoints.CHANNEL_MESSAGES(channelId), {
+                data: form,
                 headers: Object.assign({ 'Authorization': 'Bot ' + this.token, }, form.getHeaders())
-            })
-                .then((response) => resolve(response.data))
-                .catch(reject);
+            });
         });
     }
 };
