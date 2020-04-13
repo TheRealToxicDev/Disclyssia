@@ -14,6 +14,7 @@ module.exports = class WebSocket extends EventEmitter {
         this.is_ready = false;
         this.is_disconnected = false;
         this._ws = null;
+        this._heartbeat = null;
     }
 
     /**
@@ -57,6 +58,24 @@ module.exports = class WebSocket extends EventEmitter {
 
     _handleWSMessage(data, flags) {
         const message = this._decompressWSMessage(data, flags);
+        switch (message.d) {
+            case Constants.GATEWAY_OP_CODES.DISPATCH:
+                this._heartbeat = message.t;
+                break;
+            case Constants.GATEWAY_OP_CODES.HEARTBEAT:
+                this.WSSend(Payloads.HEARTBEAT(this._heartbeat));
+                break;
+            case Constants.GATEWAY_OP_CODES.RECONNECT:
+                this._ws.terminate();
+                break;
+            case Constants.GATEWAY_OP_CODES.HELLO:
+                const token = this._client.token;
+                if (this._client.presence !== null) {
+                    this.WSSend(Payloads.PRESENCE(this._client.presence));
+                }
+                this._WSConnect(Payloads.IDENTIFY({ token }));
+                break;
+        }
         switch (message.t) {
             case "READY":
                 if (!this.is_ready) {
@@ -72,9 +91,7 @@ module.exports = class WebSocket extends EventEmitter {
 
     _handleWSError(error) {
         if (this._ws !== null) {
-            if (error) {
-                throw error;
-            }
+            if (error) { throw error; }
         }
     }
 
@@ -85,16 +102,14 @@ module.exports = class WebSocket extends EventEmitter {
     }
 
     _decompressWSMessage(message, flags) {
-        if (typeof flags !== 'object')
-            flags = {};
-        if (!flags.binary) {
-            return JSON.parse(message);
-        } else {
+        if (typeof flags !== 'object') { flags = {}; }
+        if (!flags.binary) { return JSON.parse(message); }
+        else {
             const inflate = new ZlibSync.Inflate();
             inflate.push(message, ZlibSync.Z_SYNC_FLUSH);
 
-            if(inflate.err < 0) {
-                throw new Error('An error has occured with Zlib: ' + inflate.msg);
+            if (inflate.err < 0) {
+                throw new Error(`An error has occured with Zlib: ${inflate.msg}`);
             }
             return JSON.parse(inflate.toString());
         }

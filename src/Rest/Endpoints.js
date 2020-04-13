@@ -2,7 +2,7 @@
 
 const Constants = require('../Constants');
 
-module.exports.BASE_URL = 'https://discordapp.com/api/v' + Constants.API_VERSION;
+module.exports.BASE_URL = `https://discordapp.com/api/v${Constants.API_VERSION}`;
 module.exports.CDN_URL = 'http://cdn.discordapp.com';
 module.exports.GATEWAY = 'wss://gateway.discord.gg';
 module.exports.USER = (userId) => `/users/${userId}`;

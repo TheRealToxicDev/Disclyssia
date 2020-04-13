@@ -16,6 +16,7 @@ module.exports = class Client extends EventEmitter {
     constructor(token = null) {
         super();
         this.token = token;
+        this.presence = null;
         this.ws = new WebSocket(this);
         this._APIRequest = new APIRequest(this);
         /* Declare client events */
@@ -49,6 +50,7 @@ module.exports = class Client extends EventEmitter {
     setPresence(data) {
         return new Promise((resolve, reject) => {
             try {
+                this.presence = data;
                 this.ws.WSSend(Payloads.PRESENCE(data));
             } catch (err) {
                 reject(err);
@@ -124,26 +126,31 @@ module.exports = class Client extends EventEmitter {
      */
     sendMessage(channelId, data) {
         return new Promise((resolve, reject) => {
-            if (!this.token)
-                reject(new Error("No token provided, use Client#login() to set it"));
-            if (!channelId)
-                reject(new Error("No channelId provided, channelId is required to use Client#sendMessage()"));
+            if (!this.token) {
+                reject(new Error('No token provided, use Client#login() to set it'));
+            }
+            if (!channelId) {
+                reject(new Error('No channelId provided, channelId is required to use Client#sendMessage()'));
+            }
             const form = new FormData();
-            if (data.file && typeof data.file === 'object')
+            if (data.file && typeof data.file === 'object') {
                 form.append(data.file.name, data.file.attachment, data.file.name);
+            }
             if (data.files) {
                 for (let i = 0; i < data.files.length; i++) {
                     let file = data.files[i];
                     form.append(file.name, file.attachment, file.name);
                 }
             }
-            if (data.embed && data.embed.rich)
+            if (data.embed && data.embed.rich) {
                 data.embed = data.embed.rich;
+            }
             if (data.embeds) {
                 for (let i = 0; i < data.embeds.length; i++) {
                     let embed = data.embeds[i];
-                    if (embed && embed.rich)
+                    if (embed && embed.rich) {
                         data.embed[i] = embed.rich;
+                    }
                 }
             }
             form.append('payload_json', JSON.stringify(data));

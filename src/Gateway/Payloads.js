@@ -3,6 +3,12 @@
 const Constants = require('../Constants');
 const MODULE_NAME = require('../../package').name;
 
+module.exports.HEARTBEAT = (sequence) => {
+    return {
+        op: Constants.GATEWAY_OP_CODES.HEARTBEAT,
+        d: sequence
+    };
+};
 module.exports.IDENTIFY = (data) => {
     return {
         op: Constants.GATEWAY_OP_CODES.IDENTIFY,
