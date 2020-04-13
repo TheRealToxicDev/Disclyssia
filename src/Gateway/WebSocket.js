@@ -14,6 +14,7 @@ module.exports = class WebSocket extends EventEmitter {
         this.is_ready = false;
         this.is_disconnected = false;
         this._ws = null;
+        this._sessionId = null;
         this._heartbeat = null;
     }
 
@@ -73,7 +74,17 @@ module.exports = class WebSocket extends EventEmitter {
                 if (this._client.presence !== null) {
                     this.WSSend(Payloads.PRESENCE(this._client.presence));
                 }
-                this._WSConnect(Payloads.IDENTIFY({ token }));
+                let payload;
+                if (this._sessionId !== null && this._heartbeat !== null) {
+                    payload = Payloads.RESUME({
+                        sequence: this._heartbeat,
+                        sessionId: this._sessionId,
+                        token: this._client.token
+                    });
+                } else {
+                    payload = Payloads.IDENTIFY({ token });
+                }
+                this._WSConnect(payload);
                 break;
         }
         switch (message.t) {
@@ -81,6 +92,7 @@ module.exports = class WebSocket extends EventEmitter {
                 if (!this.is_ready) {
                     this.emit('ready', message.d.user);
                     this.is_ready = true;
+                    this._sessionId = message.d.session_id;
                 }
                 break;
             case "MESSAGE_CREATE":
@@ -91,7 +103,9 @@ module.exports = class WebSocket extends EventEmitter {
 
     _handleWSError(error) {
         if (this._ws !== null) {
-            if (error) { throw error; }
+            if (error) {
+                throw error;
+            }
         }
     }
 
@@ -102,14 +116,16 @@ module.exports = class WebSocket extends EventEmitter {
     }
 
     _decompressWSMessage(message, flags) {
-        if (typeof flags !== 'object') { flags = {}; }
-        if (!flags.binary) { return JSON.parse(message); }
-        else {
+        if (typeof flags !== 'object')
+            flags = {};
+        if (!flags.binary) {
+            return JSON.parse(message);
+        } else {
             const inflate = new ZlibSync.Inflate();
             inflate.push(message, ZlibSync.Z_SYNC_FLUSH);
 
-            if (inflate.err < 0) {
-                throw new Error(`An error has occured with Zlib: ${inflate.msg}`);
+            if(inflate.err < 0) {
+                throw new Error('An error has occured with Zlib: ' + inflate.msg);
             }
             return JSON.parse(inflate.toString());
         }

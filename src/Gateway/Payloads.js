@@ -37,3 +37,13 @@ module.exports.PRESENCE = (data) => {
         }
     };
 };
+module.exports.RESUME = (data) => {
+    return {
+        op: Constants.GATEWAY_OP_CODES.RESUME,
+        d: {
+            seq: data.sequence,
+            session_id: data.sessionId,
+            token: data.token
+        }
+    }
+};
